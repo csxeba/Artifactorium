@@ -10,41 +10,38 @@ class Artifactorium:
 
     """Path manager which stores and builds paths for experiment tracking"""
 
-    def __init__(self, root: Union[str, pathlib.Path], *subdirectories, **paths):
+    def __init__(self, root: Union[str, pathlib.Path], *subdirectories):
         self._registry: OrderedDict[str, pathlib.Path] = OrderedDict({})
         self._registry["root"] = path_utils.build(root, *subdirectories)
-        for prop, path in paths.items():
-            self.register_path(prop, path)
+        self._file_flags: OrderedDict[str, bool] = OrderedDict({})
+        self._file_flags["root"] = False
 
     def register_path(self,
                       property_name: str,
                       path: Union[str, pathlib.Path] = None,
-                      *subdirectories):
+                      *subdirectories,
+                      is_file: bool = False):
+
         if property_name == "root":
             raise RuntimeError("The root property cannot be reset, because it contains the Artifactory root.")
         if path is None:
             path = property_name
         path = path_utils.build(self.root, path, *subdirectories)
         self._registry[property_name] = path
+        self._file_flags[property_name] = is_file
 
     def __getitem__(self, prop: str):
         if prop not in self._registry:
             raise RuntimeError(f"property not in Artifactorium: {prop}")
         path = self._registry[prop]
-        path.mkdir(parents=True, exist_ok=True)
+        if self._file_flags[prop]:
+            path.parent.mkdir(parents=True, exist_ok=True)
+        else:
+            path.mkdir(parents=True, exist_ok=True)
         return path
-
-    def __setitem__(self, prop: str, path: Union[str, pathlib.Path]):
-        self.register_path(property_name=prop, path=path)
 
     def __getattr__(self, prop: str):
         return self.__getitem__(prop)
-
-    def __setattr__(self, prop: str, path: Union[str, pathlib.Path]):
-        if prop[0] == "_":
-            super().__setattr__(prop, path)
-            return
-        self.__setitem__(prop, path)
 
     def describe(self):
         print(f" [Artifactorium] - Created on {str(path_utils.NOW)}")

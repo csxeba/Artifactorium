@@ -32,25 +32,9 @@ class MyTestCase(test_utils.BaseTest):
         self.assertEqual(dir1, target_dir1)  # check whether path building was correct
         self.assertEqual(dir2, target_dir2)
 
-    def test_registering_during_initialization(self):
-        a = Artifactorium(self.master_root.name, "testing",
-                          test_dir1="test_dir1",
-                          test_dir2="test_dir2")
-        self._run_check(artifactorium=a)
-
     def test_registering_with_the_register_function(self):
         self.artifactorium.register_path("test_dir1", "test_dir1")
         self.artifactorium.register_path("test_dir2", "test_dir2")
-        self._run_check(self.artifactorium)
-
-    def test_registering_with_keyword_assignment(self):
-        self.artifactorium["test_dir1"] = "test_dir1"
-        self.artifactorium["test_dir2"] = "test_dir2"
-        self._run_check(self.artifactorium)
-
-    def test_registering_with_property_assignment(self):
-        self.artifactorium.test_dir1 = "test_dir1"
-        self.artifactorium.test_dir2 = "test_dir2"
         self._run_check(self.artifactorium)
 
     def test_registering_with_the_simple_register_form(self):

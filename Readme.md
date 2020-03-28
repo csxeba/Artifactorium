@@ -52,13 +52,16 @@ artifactorium.register_path("tensorboard")
 
 Which registers "artifactory_root/tensorboard" under the property name "tensorboard".
 
-Paths can be registered in bulk in initialization time by providing them as keyword
-arguments:
+File paths are a bit tricky because of the lazy evaluation. They can be registered
+by explicitly telling Artifactorium that the path is to be handles as a file,
+unless the lazy evaluation will create our file as a directory and makes our
+lives difficult.
+
+So please indicate when registering a file:
 
 ```python
-artifactorium = Artifactorium("/data/experiments", "ml", "NOW")
+artifactorium.register_path("csv_log", "logs/runlog.csv", is_file=True)
 ```
-
 
 ### Resetting paths
 
@@ -77,22 +80,18 @@ artifactorium["tensorboard"]
 
 Paths can also be registered by setting them as properties or keywords-value pairs:
 
-```python
-artifactorium.csv_log = "logs/csv/runlog.csv"
-artifactorium["csv_log"] = "logs/csv/runlog.csv"
-```
-
-This form however, does not support using the magic "NOW" value.
-
 The paths returned by the instance are always pathlib.Path objects. Please note
 that some libraries do not fully support passing Path objects to them, in which
 case you need to manually cast the Path objects to strings to interface with
 these libraries. There will be examples on this case later.
 
-### A note on laziness
+### Note on laziness
 
 The directories (including the the artifactorium root) will only be created, if they
-are accessed by the user after creation.
+are accessed by the user after creation. Please note that because of this, when you
+register a file path, you must indicate that it is a path to a file, or a directory
+will be created under your file name when you try to access your registered file
+path.
 
 ## Example
 
@@ -112,10 +111,10 @@ import tensorflow as tf
 from artifactorium import Artifactorium
 
 artifactory = Artifactorium("/data/experiments", "reinforcement", "PPO", "Pong-v0", "NOW")
-artifactory.tensorboard = "logs/tensorboard"
-artifactory.csv_log = "logs/csv/runlog.csv"
-artifactory.renders = "renders"
-artifactory.checkpoints_root = "checkpoints"
+artifactory.register_path("tensorboard", "logs/tensorboard")
+artifactory.register_path("csv_logs", "logs/csv/runlog.csv")
+artifactory.register_path("renders")
+artifactory.register_path("model_checkpoints")
 
 ...  # Secret Reinforcement Learning magic is happening here
 
@@ -141,7 +140,7 @@ from artifactorium import Artifactorium
 
 artifactory = Artifactorium("/data/experiments", "data_science", "iris", "NOW")
 artifactory.register_path("plots")
-artifactory.register_path("config", "experiment_config.json")
+artifactory.register_path("config", "experiment_config.json", is_file=True)
 
 ...  # Secret Data Science magic is happening here
 
