@@ -12,9 +12,10 @@ Artifactorium can be installed by issuing the following command:
 
 ## Usage
 
+
 ### Instantiation
 
-The library presents an OOP API and is intended to simple imported by issuing
+The library presents an OOP API and is intended to be simply imported by issuing
 
 ```python
 from artifactorium import Artifactorium
@@ -30,10 +31,11 @@ her directories however they want.
 
 The special string 'NOW' will be replaced by the current date and time.
 
+
 ### Registering paths
 
-After an instance has been created, we can register subdirectories, which can be
-used to store and separate different artifacts of an experiment by using
+After an instance has been created, subdirectories can be registered, for
+storing and separating different artifacts of an experiment.
 
 ```python
 artifactorium.register_path(property_name="tensorboard", path="logs/tensorboard")
@@ -63,11 +65,20 @@ So please indicate when registering a file:
 artifactorium.register_path("csv_log", "logs/runlog.csv", is_file=True)
 ```
 
+#### Note on code completion
+
+This type of dynamic property creation does not go well with modern IDEs.
+There is one thing we can do to at least get code completion. An example will
+be shown for this in the *Examples* section.
+
 ### Resetting paths
 
 The root directory will always be registered under the "root" property, which cannot
-be reset. Any other **properties can be freely set and reset**, so it is the user's
-responsibility to watch out for overriden properties.
+be reset. Any other **properties can be freely set and reset by default**. If this
+is not the desired behaviour, the `allow_reset_properties` constructor parameter
+can be set to `False`, in which case a PropertyAlreadySetError will be thrown,
+which is defined in *artifactory.exception*.
+
 
 ### Accessing registered paths
 
@@ -78,12 +89,10 @@ artifactorium.tensorboard
 artifactorium["tensorboard"]
 ```
 
-Paths can also be registered by setting them as properties or keywords-value pairs:
-
-The paths returned by the instance are always pathlib.Path objects. Please note
+The paths returned by the instance are pathlib.Path objects by default. Please note
 that some libraries do not fully support passing Path objects to them, in which
-case you need to manually cast the Path objects to strings to interface with
-these libraries. There will be examples on this case later.
+case you either need to manually cast the Path objects to strings or set the
+constructor parameter `return_paths_as_strings` to `True`.
 
 ### Note on laziness
 
@@ -158,3 +167,35 @@ plt.scatter(lda_data[:, 0], lda_data[:, 1], "rx")
 plt.grid()
 plt.savefig(artifactory.plots / "lda_transform.png")
 ```
+
+Below is an example on how to use Artifactorium and get code completion for
+modern IDEs.
+
+The secret is to derive a class from Artifactorium and define the \_\_slots\_\_
+attribute for our subclass. 
+
+```python
+from artifactorium import Artifactorium
+
+
+class MyArtifactorium(Artifactorium):
+
+    __slots__ = "logs", "checkpoints"
+
+    def __init__(self):
+        super().__init__(self, "root")
+        self.register_path("logs")
+        self.register_path("checkpoints")
+```
+
+This way, the IDE will get a hint for what property names will be available.
+However, using slots restricts some functionalities of Python classes. You can
+educate yourself about slots in the Python docs:
+[3. Data model](https://docs.python.org/3/reference/datamodel.html#slots)
+
+## Thanks
+
+Thank you for using Artifactorium! Any bugs, improvement suggestions can be
+filed as an issue on the GitHub!
+
+Pull requests are also welcome!
