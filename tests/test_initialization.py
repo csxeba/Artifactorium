@@ -17,6 +17,14 @@ class TestInitializations(test_utils.BaseTest):
         root = a.root  # accessing the property causes the creation of the directory
         self.assertTrue(root.exists())
 
+    def test_setting_overwritable_flag_on_initialization(self):
+        a = Artifactorium(self.master_root.name, "artifactory", allow_reset_properties=True)
+        self.assertTrue(a._allow_reset_properties)
+
+    def test_setting_string_retrieval_flag_on_initialization(self):
+        a = Artifactorium(self.master_root.name, "artifactory", return_paths_as_string=True)
+        self.assertTrue(a._return_paths_as_string)
+
 
 if __name__ == '__main__':
     unittest.main()
